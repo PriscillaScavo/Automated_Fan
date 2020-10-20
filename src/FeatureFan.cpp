@@ -1,56 +1,9 @@
 #include "FeatureFan.h"
-/**
-   * @brief  Manage the servo rotation. 
-   * The rotation is controlled by joystick, if it is actived, otherwise the rotation is controlled by the sr04 sensor.
-   * @param  None.
-   * @retval None.
-   */
-void FeatureFan::servoControl()
-{
-  if ((millis() - joistick.debounceJoystick) >= 100) {
-    joistick.debounceJoystick = millis();
-    joistick.button = !digitalRead(joystick_button);
 
-    if (joistick.button == 1 && joistick.buttonLast == 0) {
-      joistick.stateJ = !(joistick.stateJ);
-    }
 
-    if (joistick.stateJ) {
-      int y = analogRead(joystick_y);
-      int angle = map(y, 0, 1023, 0, 180);
-
-      if(angle > 135 || angle < 86){
-        Serial.println("posizione in if: " + String(angle));
-        servo.write(angle);
-      }
-    } else {
-      sr04();
-    }
-
-    joistick.buttonLast = joistick.button;
-  }
-}
 
 /**
-   * @brief  If the mode of the fan is "AUTO" or "CUSTOM_AUTO", the auto mode is managed. 
-   * If the power is changed, the motor is actived with it and the display is uploaded.
-   * @param  None.
-   * @retval None.
-   */
-void FeatureFan::manageAutoMode()
-{
-  if (powerMod.mod == "AUTO" || powerMod.mod == "CUSTOM_AUTO") {
-    //powerAuto = powerMod.power;
-    autoMode();
-
-    if (powerAuto != powerMod.power) {
-      powerMotorMode(powerMod.power);
-      displayMode(powerMod.power, powerMod.mod);
-    }
-  }
-}
-/**
-   * @brief  Begins a transmission to the I2C. 
+   * @brief  Begins a transmission to the I2C.
    *  The reading of the registers  0x41 (TEMP_OUT_H) and 0x42 (TEMP_OUT_L) is requested.
    *  The temperature is calculated using an equation taken from the documentation (MPU-6000/MPU-6050 Register Map and Description, p.30).
    * @param  None.
@@ -76,31 +29,7 @@ void FeatureFan::autoMode()
   }
 
 }
-/**
-   * @brief  If the mode of fan is "CUSTOM" or "CUSTOM_AUTO", 
-   * Serial.available get the number of bytes (characters) available for reading from the serial port. 
-   * Serial.read reads incoming char from the serial port.
-   * @param  None.
-   * @retval None.
-   */
 
-void FeatureFan::customMode()
-{
-  if (powerMod.mod == "CUSTOM" || powerMod.mod == "CUSTOM_AUTO") {
-    int b = Serial.available();
-    if (b) {
-      for (int i = 0; i < b; i++) {
-        char ch = Serial.read();
-        if ((ch == '\n') || (ch == '\r')) {
-          processCommand(command);
-          command = "";
-        } else {
-          command += ch;
-        }
-      }
-    }
-  }
-}
 /**
    * @brief  Show on the display the power of the motor and the mode of the fan.
    * @param  The power of the motor and the mode of the fan.
@@ -123,25 +52,7 @@ void FeatureFan::displayMode(int p, String m)
   lcd.setCursor(0, 1);
   lcd.print(s2);
 }
-/**
-   * @brief  The command given by the button is checked waiting at least 100 millisec through the debounce technique.
-   * @param  None.
-   * @retval None.
-   */
-void FeatureFan::checkStateB()
-{
-  if ((millis() - ultimoDebounceStateB) > 100) {
 
-    if (stateB != 0) {
-      Serial.print("stateB: ");
-      Serial.println(stateB);
-      changePowerMod(stateB);
-      displayMode(powerMod.power, powerMod.mod);
-    }
-    stateB = 0;
-    ultimoDebounceStateB = millis();
-  }
-}
 /**
    * @brief  Change the power of the motor and the mode of the fan according to the parameter state.
    * @param  Number indicating the desired combination of power of the motor and mode of the fan.
@@ -167,9 +78,9 @@ void FeatureFan::changePowerMod(byte state)
 }
 
 /**
-   * @brief  ultimoTempoDebounce = millis is updated if the new pin reading is different from the last one. 
-   * If since the last update of ultimoTempoDebounce has passed a time equal to at least attesaDebounce, 
-   * it is evaluated if the value just read is different from pin_state and if it is HIGH, 
+   * @brief  ultimoTempoDebounce = millis is updated if the new pin reading is different from the last one.
+   * If since the last update of ultimoTempoDebounce has passed a time equal to at least attesaDebounce,
+   * it is evaluated if the value just read is different from pin_state and if it is HIGH,
    * at that point it means that the button has been pressed and the stateB command is updated and pin_state is updated  with the value just read.
    * @param  None.
    * @retval None.
@@ -226,41 +137,4 @@ int FeatureFan::String_to_int(String s)
     r += int (s[i]);
   }
   return r;
-}
-/**
-   * @brief  The distance from the obstacle is calculated waiting at least 300 millisec. 
-   * If the distance is greater than MAX_DISTANCE or equal to 0, the servo arm is rotated.
-   * @param  None.
-   * @retval None.
-   */
-void FeatureFan::sr04()
-{
-  if ((millis() - debounceDistanza) >= 100) {
-    debounceDistanza = millis();
-    int distanza = sonar.ping_cm();
-    //Serial.println("distanza: " + String(distanza));
-    if(distanza < MAX_DISTANCE && distanza != 0){
-       countZero = 0;
-      }
-    if(distanza == 0 || distanza > MAX_DISTANCE){
-        countZero++;
-      }
-    if (distanza > MAX_DISTANCE || countZero == 5) {
-     //  Serial.println("muovo servo ");
-      if (currentAngle <= 0) {
-        directionRotation = !directionRotation;
-        currentAngle += STEP;
-      } else if (currentAngle >= MAXANGLE) {
-        directionRotation = !directionRotation;
-        currentAngle -= STEP;
-      } else if (directionRotation) {
-        currentAngle -= STEP;
-      } else {
-        currentAngle += STEP;
-      }
-      servo.write(currentAngle);
-      countZero = 0;
-    }
-
-  }
 }
