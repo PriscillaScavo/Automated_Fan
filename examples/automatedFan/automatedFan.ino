@@ -15,8 +15,7 @@
 #define JOYSTICK_BUTTON 13
 
 FeatureFan *fan;
-int power;
-String fanMode;
+
 
 void runMotor();
 void autoMode();
@@ -44,7 +43,7 @@ Task sr04Task(100, TASK_FOREVER, sr04);
 
 void runMotor()
 {
-  power = fan -> checkStateB();
+  int power = fan -> checkStateB();
   fan -> powerMotorMode(power);
 }
 
