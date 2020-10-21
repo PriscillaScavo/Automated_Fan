@@ -22,9 +22,10 @@ Possono essere attivate due modalità aggiuntive: automatica (La velocità della
 - [NewPing](https://www.arduino.cc/reference/en/libraries/newping/)
 - [Servo](https://www.arduino.cc/reference/en/libraries/servo/)
 - [LiquidCrystal](https://www.arduino.cc/en/Reference/LiquidCrystal)
+- [#include "TaskScheduler.h"](https://www.arduino.cc/en/reference/wire)
 
 ## Circuito
-![](./fritzing/automatedFan.png)
+![](./fritzing/AutomatedFan.png)
 
 
 This work is licensed under a [Creative Commons Attribution 4.0 International
