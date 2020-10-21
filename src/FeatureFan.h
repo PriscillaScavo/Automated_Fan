@@ -13,9 +13,8 @@
 
 class FeatureFan {
   public:
-
     FeatureFan(uint8_t power_motor, uint8_t control_b1, uint8_t control_b2, uint8_t control_b3, uint8_t pin_servo,
-               uint8_t trig_pin, uint8_t echo_pin, uint8_t joystick_y, uint8_t joystick_button, uint8_t rsLcd, 
+               uint8_t trig_pin, uint8_t echo_pin, uint8_t joystick_y,uint8_t joystick_x, uint8_t joystick_button, uint8_t rsLcd,
                uint8_t eLcd, uint8_t d4Lcd, uint8_t d5Lcd, uint8_t d6Lcd, uint8_t d7Lcd):
 
       power_motor(power_motor),
@@ -28,7 +27,7 @@ class FeatureFan {
       joystick_y(joystick_y),
       joystick_button(joystick_button),
       sonar(trig_pin, echo_pin, MAX_DISTANCE),
-      lcd(rsLcd,eLcd,d4Lcd, d5Lcd, d6Lcd, d7Lcd)
+      lcd(rsLcd, eLcd, d4Lcd, d5Lcd, d6Lcd, d7Lcd)
     {
 
 
@@ -60,20 +59,117 @@ class FeatureFan {
     }
     //functions
     /**
-      * @brief  If mode of the fan is different from "OFF", 
-      * the servo rotation is managed and if the custom mode and the auto mode are actived, they are managed.
+       * @brief  If the mode of fan is "CUSTOM" or "CUSTOM_AUTO",
+       * Serial.available get the number of bytes (characters) available for reading from the serial port.
+       * Serial.read reads incoming char from the serial port.
        * @param  None.
        * @retval None.
        */
-    virtual void off_on()
+
+    virtual void customMode()
     {
-      if (powerMod.mod != "OFF") {
-        servoControl();
-        customMode();
-        manageAutoMode();
+      if (powerMod.mod == "CUSTOM" || powerMod.mod == "CUSTOM_AUTO") {
+        int b = Serial.available();
+        if (b) {
+          for (int i = 0; i < b; i++) {
+            char ch = Serial.read();
+            if ((ch == '\n') || (ch == '\r')) {
+              processCommand(command);
+              command = "";
+            } else {
+              command += ch;
+            }
+          }
+        }
+      }
+    }
+    /**
+       * @brief  If the mode of the fan is "AUTO" or "CUSTOM_AUTO", the auto mode is managed.
+       * If the power is changed, the motor is actived with it and the display is uploaded.
+       * @param  None.
+       * @retval None.
+       */
+    virtual void manageAutoMode()
+    {
+      if (powerMod.mod == "AUTO" || powerMod.mod == "CUSTOM_AUTO") {
+        autoMode();
+
+        if (powerMod.powerAuto != powerMod.power) {
+          powerMotorMode(powerMod.power);
+          displayMode(powerMod.power, powerMod.mod);
+        }
+      }
+    }
+    /**
+    * @brief  Manage the servo rotation.
+    * The rotation is controlled by joystick and return true, if it is actived, otherwise return false.
+    * @param  None.
+    * @retval None.
+    */
+    virtual bool joystickControl()
+    {
+      if ((millis() - joystick.debounceJoystick) >= 100) {
+        joystick.debounceJoystick = millis();
+        joystick.button = !digitalRead(joystick_button);
+
+        if (joystick.button == 1 && joystick.buttonLast == 0) {
+          joystick.stateJ = !(joystick.stateJ);
+        }
+        joystick.buttonLast = joystick.button;
+        
+        
+        if (joystick.stateJ) {
+          int y = analogRead(joystick_y);
+          int x = analogRead(joystick_x);
+          int angley = map(y, 0, 1023, 0, 180);
+          int anglex = map(x, 0, 1023, 0, 180);
+          
+          if ((angley > 120 || angley < 106 )&& (anglex > 95 || anglex < 87)) {
+            servo.write(angley);
+          }
+          joystickActive = 1;
+        } else {
+          joystickActive = 0;
+
+        }
+
 
       }
+    }
 
+    /**
+       * @brief  The distance from the obstacle is calculated waiting at least 300 millisec.
+       * If the distance is greater than MAX_DISTANCE or equal to 0, the servo arm is rotated.
+       * @param  None.
+       * @retval None.
+       */
+    virtual void sr04()
+    {
+      int distanza = sonar.ping_cm();
+      
+      if (distanza < MAX_DISTANCE && distanza != 0) {
+        edgeTolerance = 0;
+      }
+      if (distanza == 0 || distanza > MAX_DISTANCE) {
+        edgeTolerance++;
+      }
+
+      if ((distanza == 0 || distanza > MAX_DISTANCE) && edgeTolerance >= 5)  {
+
+        if (currentAngle <= 0) {
+          directionRotation = !directionRotation;
+          currentAngle += STEP;
+        } else if (currentAngle >= MAXANGLE) {
+          directionRotation = !directionRotation;
+          currentAngle -= STEP;
+        } else if (directionRotation) {
+          currentAngle -= STEP;
+        } else {
+          currentAngle += STEP;
+        }
+        servo.write(currentAngle);
+        edgeTolerance = 0;
+      }
     }
     /**
        * @brief  Active the features of auto mode.
@@ -96,7 +192,7 @@ class FeatureFan {
     /**
        * @brief  Use the command(obtained by the combination of three buttons) to choses the power of the motor.
        * @param  None.
-       * @retval The power chosen for the motor.
+       * @retval None.
        */
     virtual int read_buttons()
     {
@@ -108,7 +204,23 @@ class FeatureFan {
       readB(&button2);
       readB(&button3);
 
-      checkStateB();
+
+    }
+
+    /**
+    * @brief  The command given by the button is checked waiting at least 100 millisec through the debounce technique.
+    * @param  None.
+    * @retval The power chosen for the motor.
+    */
+    virtual int checkStateB()
+    {
+
+      if (stateB != 0) {
+        changePowerMod();
+        displayMode(powerMod.power, powerMod.mod);
+        
+      }
+      stateB = 0;
       return powerMod.power;
     }
     /**
@@ -121,21 +233,25 @@ class FeatureFan {
       analogWrite(power_motor, power);
     }
 
+    virtual String currentFanMode()
+    {
+      return powerMod.mod;
+    }
 
+    virtual int isJoystickActive()
+    {
+      return joystickActive;
+    }
   protected:
     void displayMode(int p, String m);
-    void checkStateB();
     void readB(buttonDebounce *buttonState) ;
     void processCommand(String command);
     int String_to_int(String s);
-    void sr04();
-    void customMode();
-    void manageAutoMode();
-    void servoControl();
     void autoMode();
-    void changePowerMod(byte state);
+    void changePowerMod();
 
     //variables
+
     uint8_t power_motor;
     uint8_t control_b1;
     uint8_t control_b2;
@@ -144,42 +260,32 @@ class FeatureFan {
     uint8_t trig_pin;
     uint8_t echo_pin;
     uint8_t joystick_y;
+    uint8_t joystick_x;
     uint8_t joystick_button;
     
-    /*uint8_t rsLcd; 
-    uint8_t eLcd;
-    uint8_t d4Lcd,; 
-    uint8_t d5Lcd;
-    uint8_t d6Lcd; 
-    uint8_t d7Lcd; 
-    */
     
-    int powerAuto = 0;
-    const int MPU_ADDR = 0x68; 
-    int16_t temperature;
+    const int MPU_ADDR = 0x68;
+//    int16_t temperature;
 
-
-
-
-    unsigned long ultimoDebounceStateB = 0;
     byte stateB = 0;
-    unsigned long debounceDistanza = millis();
 
     buttonDebounce button1;
     buttonDebounce button2;
     buttonDebounce button3;
-
+    manageJoystick joystick;
+    powerModFan powerMod;
 
     int useCustomMode = 0;
     int useAutoMode = 0;
-
+    int joystickActive = 0;
 
     String command = "";
+    
+    
     int  currentAngle = 0;
     int directionRotation = 0;
-    manageJoystick joistick;
-    powerModFan powerMod;
-    int countZero = 0;
+    int edgeTolerance = 0;
+    
     Servo servo;
     NewPing sonar;
     LiquidCrystal lcd;
