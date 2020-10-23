@@ -85,19 +85,12 @@ void FeatureFan::changePowerMod()
    * @param  None.
    * @retval None.
    */
-void FeatureFan::readB(buttonDebounce *buttonState)
+void FeatureFan::readB(buttonState *buttonState)
 {
-  if (buttonState->readpin != buttonState->ultimaLettura) {
-    buttonState->ultimoTempoDebounce = millis();
-  }
-
-  if ((millis() - buttonState->ultimoTempoDebounce) > buttonState->attesaDebounce) {
-    if (buttonState->readpin != buttonState->pin_state and buttonState->readpin == HIGH) {
+ if (buttonState->readpin != buttonState->ultimaLettura and buttonState->readpin == HIGH) {
       stateB = stateB | buttonState->state;
     }
 
-    buttonState->pin_state = buttonState->readpin;
-  }
   buttonState->ultimaLettura = buttonState->readpin;
 
 }

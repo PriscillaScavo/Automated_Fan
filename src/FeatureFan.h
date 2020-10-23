@@ -214,7 +214,7 @@ class FeatureFan {
     */
     virtual int checkStateB()
     {
-
+     
       if (stateB != 0) {
         changePowerMod();
         displayMode(powerMod.power, powerMod.mod);
@@ -244,7 +244,7 @@ class FeatureFan {
     }
   protected:
     void displayMode(int p, String m);
-    void readB(buttonDebounce *buttonState) ;
+    void readB(buttonState *buttonState) ;
     void processCommand(String command);
     int String_to_int(String s);
     void autoMode();
@@ -269,9 +269,9 @@ class FeatureFan {
 
     byte stateB = 0;
 
-    buttonDebounce button1;
-    buttonDebounce button2;
-    buttonDebounce button3;
+    buttonState button1;
+    buttonState button2;
+    buttonState button3;
     manageJoystick joystick;
     powerModFan powerMod;
 
