@@ -11,11 +11,9 @@ typedef enum {
 typedef struct {
   int pin_state = LOW;
   int ultimaLettura = LOW;
-  unsigned long ultimoTempoDebounce = 0;
-  int attesaDebounce = 50;
   stateMotor state;
   int readpin;
-} buttonDebounce;
+} buttonState;
 
 
 
@@ -23,6 +21,7 @@ typedef struct {
   int power = 0;
   String mod = "OFF";
   int temp = 0;
+  int powerAuto = 0;
 } powerModFan;
 
 
