@@ -25,13 +25,13 @@ Possono essere attivate due modalità aggiuntive: automatica (La velocità della
 - [TaskScheduler](https://www.arduino.cc/en/reference/wire)
 
 ## Circuito
-![](./fritzing/AutomatedFan.png)
+![](./fritzing/automatedFan.png)
 
 
 This work is licensed under a [Creative Commons Attribution 4.0 International
 License][cc-by]. [![CC BY 4.0][cc-by-shield]][cc-by]
 
-(nell'immagine manca il modulo GY-521 perchè non era presente in fritzing)
+
 [![CC BY 4.0][cc-by-image]][cc-by]
 
 [cc-by]: http://creativecommons.org/licenses/by/4.0/
