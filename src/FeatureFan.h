@@ -268,7 +268,6 @@ class FeatureFan {
     
     
     const int MPU_ADDR = 0x68;
-//    int16_t temperature;
 
     byte stateB = 0;
 
