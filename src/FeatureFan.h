@@ -55,6 +55,7 @@ class FeatureFan {
       Wire.endTransmission(true);
 
       lcd.begin(16, 2);
+       displayMode(powerMod.power, powerMod.mod);
 
     }
     //functions
@@ -90,11 +91,13 @@ class FeatureFan {
        * @retval None.
        */
     virtual void manageAutoMode()
-    {
+
+   {
+    
       if (powerMod.mod == "AUTO" || powerMod.mod == "CUSTOM_AUTO") {
         autoMode();
-
         if (powerMod.powerAuto != powerMod.power) {
+          powerMod.power = powerMod.powerAuto;
           powerMotorMode(powerMod.power);
           displayMode(powerMod.power, powerMod.mod);
         }
