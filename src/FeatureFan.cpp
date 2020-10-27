@@ -60,7 +60,6 @@ void FeatureFan::displayMode(int p, String m)
    */
 void FeatureFan::changePowerMod()
 {
-  Serial.println("stateb: "+ String(stateB));
   switch (stateB) {
     case 1: powerMod.power = PLOWB; powerMod.mod = "LOW"; break;
     case 2: powerMod.power = PMIDB; powerMod.mod = "MID"; break;
@@ -79,10 +78,9 @@ void FeatureFan::changePowerMod()
 }
 
 /**
-   * @brief  ultimoTempoDebounce = millis is updated if the new pin reading is different from the last one.
-   * If since the last update of ultimoTempoDebounce has passed a time equal to at least attesaDebounce,
-   * it is evaluated if the value just read is different from pin_state and if it is HIGH,
-   * at that point it means that the button has been pressed and the stateB command is updated and pin_state is updated  with the value just read.
+   * @brief it is evaluated if the value just read is different from ultimaLettura and if it is HIGH,
+   * at that point it means that the button has been pressed and the stateB command is updated and ultimaLettura 
+   * is updated  with the value just read.
    * @param  None.
    * @retval None.
    */

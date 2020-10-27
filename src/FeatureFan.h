@@ -140,15 +140,13 @@ class FeatureFan {
     }
 
     /**
-       * @brief  The distance from the obstacle is calculated waiting at least 300 millisec.
-       * If the distance is greater than MAX_DISTANCE or equal to 0, the servo arm is rotated.
+       * @brief If the distance is greater than MAX_DISTANCE or equal to 0, the servo arm is rotated.
        * @param  None.
        * @retval None.
        */
     virtual void sr04()
     {
       int distanza = sonar.ping_cm();
-      //Serial.println("distanza: " + String(distanza));
       if (distanza < MAX_DISTANCE && distanza != 0) {
         edgeTolerance = 0;
       }
@@ -210,7 +208,7 @@ class FeatureFan {
     }
 
     /**
-    * @brief  The command given by the button is checked waiting at least 100 millisec through the debounce technique.
+    * @brief  The command given by the button is checked.
     * @param  None.
     * @retval The power chosen for the motor.
     */
