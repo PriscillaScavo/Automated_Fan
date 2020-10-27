@@ -50,14 +50,15 @@ class FeatureFan {
 
       Wire.begin();
       Wire.beginTransmission(MPU_ADDR);
-      Wire.write(0x6B); // PWR_MGMT_1 register
-      Wire.write(0); // set to zero (wakes up the MPU-6050)
-      Wire.endTransmission(true);
+      Wire.write(0x6B); // PWR_MGMT_1 (Power Management) register
+      Wire.write(0); // Internal 8MHz oscillator
+      Wire.endTransmission(true);//send a stop message, releasing the bus after transmission
 
       lcd.begin(16, 2);
-       displayMode(powerMod.power, powerMod.mod);
 
     }
+
+
     //functions
     /**
        * @brief  If the mode of fan is "CUSTOM" or "CUSTOM_AUTO",
@@ -91,13 +92,11 @@ class FeatureFan {
        * @retval None.
        */
     virtual void manageAutoMode()
-
-   {
-    
+    {
       if (powerMod.mod == "AUTO" || powerMod.mod == "CUSTOM_AUTO") {
         autoMode();
+
         if (powerMod.powerAuto != powerMod.power) {
-          powerMod.power = powerMod.powerAuto;
           powerMotorMode(powerMod.power);
           displayMode(powerMod.power, powerMod.mod);
         }
@@ -149,7 +148,7 @@ class FeatureFan {
     virtual void sr04()
     {
       int distanza = sonar.ping_cm();
-      
+      //Serial.println("distanza: " + String(distanza));
       if (distanza < MAX_DISTANCE && distanza != 0) {
         edgeTolerance = 0;
       }
@@ -268,6 +267,7 @@ class FeatureFan {
     
     
     const int MPU_ADDR = 0x68;
+
 
     byte stateB = 0;
 

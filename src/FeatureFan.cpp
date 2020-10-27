@@ -12,9 +12,9 @@
 void FeatureFan::autoMode()
 {
   Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x41);
-  Wire.endTransmission(false);
-  Wire.requestFrom(MPU_ADDR, 2, true); // request a total of 2 registers
+  Wire.write(0x41); //starting with register 0x41(TEMP_OUT_H) 
+  Wire.endTransmission(false); //send a restart, keeping the connection active.
+  Wire.requestFrom(MPU_ADDR, 2, true); // request a total of 2 registers(byte)
 
 
   int16_t temperature = Wire.read() << 8 | Wire.read();
@@ -60,6 +60,7 @@ void FeatureFan::displayMode(int p, String m)
    */
 void FeatureFan::changePowerMod()
 {
+  Serial.println("stateb: "+ String(stateB));
   switch (stateB) {
     case 1: powerMod.power = PLOWB; powerMod.mod = "LOW"; break;
     case 2: powerMod.power = PMIDB; powerMod.mod = "MID"; break;
