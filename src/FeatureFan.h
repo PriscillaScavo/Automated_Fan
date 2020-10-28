@@ -55,6 +55,7 @@ class FeatureFan {
       Wire.endTransmission(true);//send a stop message, releasing the bus after transmission
 
       lcd.begin(16, 2);
+      displayMode(0, "OFF");
 
     }
 
