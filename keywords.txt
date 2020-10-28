@@ -1,0 +1,28 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+FeatureFan	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+customMod   KEYWORD2
+manageAutoMode  KEYWORD2
+joystickControl KEYWORD2
+sr04    KEYWORD2
+activeAutoMode  KEYWORD2
+activeCustomMode    KEYWORD2
+read_buttons    KEYWORD2
+checkStateB KEYWORD2
+powerMotorMode  KEYWORD2
+currentFanMode  KEYWORD2
+isJoystickActive    KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+####################################### 
+MAXANGLE    LITERAL1
+MAX_DISTANCE    LITERAL1    
+STEP    LITERAL1
